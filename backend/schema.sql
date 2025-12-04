@@ -44,14 +44,13 @@ create table if not exists public.tasks (
   tenant_id uuid not null,
   application_id uuid not null references public.applications(id) on delete cascade,
   title text,
-  type text not null,
+  type text not null constraint check_tasks_type check (type in ('call', 'email', 'review')),
   status text not null default 'open',
   due_at timestamptz not null,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint check_tasks_due_created check (due_at >= created_at)
 );
 
 -- TODO:
--- - add check constraint for type in ('call','email','review')
--- - add constraint that due_at >= created_at
 -- - add indexes for tasks due today by tenant_id, due_at, status
