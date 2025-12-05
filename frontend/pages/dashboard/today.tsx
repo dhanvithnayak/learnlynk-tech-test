@@ -73,26 +73,41 @@ export default function TodayDashboard() {
       {tasks.length === 0 && <p>No tasks due today 🎉</p>}
 
       {tasks.length > 0 && (
-        <table>
+        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
           <thead>
-            <tr>
-              <th>Type</th>
-              <th>Application</th>
-              <th>Due At</th>
-              <th>Status</th>
-              <th>Action</th>
+            <tr style={{ borderBottom: "2px solid #000" }}>
+              <th style={{ padding: "12px" }}>Type</th>
+              <th style={{ padding: "12px" }}>Application</th>
+              <th style={{ padding: "12px" }}>Due At</th>
+              <th style={{ padding: "12px" }}>Status</th>
+              <th style={{ padding: "12px" }}>Action</th>
             </tr>
           </thead>
           <tbody>
             {tasks.map((t) => (
-              <tr key={t.id}>
-                <td>{t.type}</td>
-                <td>{t.application_id}</td>
-                <td>{new Date(t.due_at).toLocaleString()}</td>
-                <td>{t.status}</td>
-                <td>
+              <tr key={t.id} style={{ borderBottom: "1px solid #ccc" }}>
+                <td style={{ padding: "12px" }}>{t.type}</td>
+                <td style={{ padding: "12px", fontFamily: "monospace" }}>
+                  {t.application_id}
+                </td>
+                <td style={{ padding: "12px" }}>
+                  {new Date(t.due_at).toLocaleString([], { hour: '2-digit', minute: '2-digit' })}
+                </td>
+                <td style={{ padding: "12px" }}>
+                    {t.status}
+                </td>
+                <td style={{ padding: "12px" }}>
                   {t.status !== "completed" && (
-                    <button onClick={() => markComplete(t.id)}>
+                    <button onClick={() => markComplete(t.id)}
+                      style={{
+                        backgroundColor: "#16a34a",
+                        color: "white",
+                        border: "none",
+                        padding: "6px 12px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "0.875rem",
+                    }}>
                       Mark Complete
                     </button>
                   )}
