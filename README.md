@@ -165,3 +165,20 @@ Write **8–12 lines** describing how you would implement a Stripe Checkout flow
 3. Share the link.
 
 Good luck.
+
+## Stripe Answer
+
+I will first insert a new row into a payment_requests table with the user_id, application_id, the fee amount, and mark it as pending. After that, I will call Stripe to create a Checkout Session using the same amount and include my success and cancel URLs. Stripe returns a session ID, which I will then store back into the payment_requests row so I can later match webhook events to this request.
+I will also store metadata in the Checkout Session—like the application_id—so that even if the user disconnects or doesn’t return to the site, I can still recover context from the webhook alone.
+In addition, I will record a created_at timestamp on the payment request so I can later track abandoned or expired payment attempts.
+If the user cancels or the session expires, I will update the request status accordingly, which helps keep the application's payment state consistent.
+
+On the backend, I will have set up a webhook endpoint that listens for Stripe events, mainly checkout.session.completed. When this event hits, I will verify the signature and then look up the stored session ID in my database. If everything matches and the payment succeeded, I update that payment_requests row to completed and save the final payment info.
+Finally, I will update the main application record to mark that the fee has been paid so the user can continue with the rest of the process.
+
+## Other notes
+
+- In Task 1, I assumed the existence of an `team_id` field in the `leads` table to facilitate team assignments for leads. Since there was no explicit mention of how a lead would be linked to a team in the problem statement, I added this field to ensure that the RLS policies in Task 2 could be effectively implemented.
+- Since you asked for a simple frontend, the only changes to the visual parts of the page was to style the tasks table with basic CSS for readability. No additional UI libraries or components were added.
+
+Had a lot of fun working on this assessment as I had not worked with Supabase Edge Functions and Stripe before. Looking forward to your feedback!!
