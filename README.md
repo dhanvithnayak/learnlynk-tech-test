@@ -168,12 +168,9 @@ Good luck.
 
 ## Stripe Answer
 
-I will first insert a new row into a payment_requests table with the user_id, application_id, the fee amount, and mark it as pending. After that, I will call Stripe to create a Checkout Session using the same amount and include my success and cancel URLs. Stripe returns a session ID, which I will then store back into the payment_requests row so I can later match webhook events to this request.
-I will also store metadata in the Checkout Session—like the application_id—so that even if the user disconnects or doesn’t return to the site, I can still recover context from the webhook alone.
-In addition, I will record a created_at timestamp on the payment request so I can later track abandoned or expired payment attempts.
-If the user cancels or the session expires, I will update the request status accordingly, which helps keep the application's payment state consistent.
+I will first insert a new row into a `payment_requests` table with the user_id, application_id, the fee amount, and mark it as pending. After that, I will call Stripe to create a Checkout Session using the same amount and include my success and cancel URLs. Stripe returns a session ID, which I will then store back into the `payment_requests` row so I can later match webhook events to this request. I will also store metadata like the application_id in the Checkout Session so that even if the user disconnects or doesn’t return to the site, I can still recover context from the webhook alone. In addition, I will record a `created_at` timestamp on the payment request so I can later track abandoned or expired payment attempts. If the user cancels or the session expires, I will update the request status accordingly, which helps keep the application's payment state consistent.
 
-On the backend, I will have set up a webhook endpoint that listens for Stripe events, mainly checkout.session.completed. When this event hits, I will verify the signature and then look up the stored session ID in my database. If everything matches and the payment succeeded, I update that payment_requests row to completed and save the final payment info.
+On the backend, I will have set up a webhook endpoint that listens for Stripe events, mainly `checkout.session.completed`. When this event hits, I will verify the signature and then look up the stored session ID in my database. If everything matches and the payment succeeded, I update that payment_requests row to completed and save the final payment info.
 Finally, I will update the main application record to mark that the fee has been paid so the user can continue with the rest of the process.
 
 ## Other notes
