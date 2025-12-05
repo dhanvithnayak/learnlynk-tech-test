@@ -1,8 +1,3 @@
-// LearnLynk Tech Test - Task 3: Edge Function create-task
-
-// Deno + Supabase Edge Functions style
-// Docs reference: https://supabase.com/docs/guides/functions
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -31,31 +26,62 @@ serve(async (req: Request) => {
     const body = (await req.json()) as Partial<CreateTaskPayload>;
     const { application_id, task_type, due_at } = body;
 
-    // TODO: validate application_id, task_type, due_at
-    // - check task_type in VALID_TYPES
-    // - parse due_at and ensure it's in the future
+    if (!application_id) {
+      return new Response(JSON.stringify({ error: "application_id is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    // TODO: insert into tasks table using supabase client
+    if (!task_type || !VALID_TYPES.includes(task_type)) {
+      return new Response(JSON.stringify({ error: `Invalid or missing task_type. Must be one of: ${VALID_TYPES.join(", ")}` }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    // Example:
-    // const { data, error } = await supabase
-    //   .from("tasks")
-    //   .insert({ ... })
-    //   .select()
-    //   .single();
+    if (!due_at) {
+      return new Response(JSON.stringify({ error: "due_at is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    } else {
+      const dueDate = new Date(due_at);
+      if (isNaN(dueDate.getTime())) {
+        return new Response(JSON.stringify({ error: "Invalid due_at format" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      } else if (dueDate <= new Date()) {
+        return new Response(JSON.stringify({ error: "due_at must be in the future" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
 
-    // TODO: handle error and return appropriate status code
 
-    // Example successful response:
-    // return new Response(JSON.stringify({ success: true, task_id: data.id }), {
-    //   status: 200,
-    //   headers: { "Content-Type": "application/json" },
-    // });
+    // tenant_id is also a required field to be added to the tasks table. I have ignored it here for simplicity
+    const { data, error } = await supabase
+      .from("tasks")
+      .insert({ application_id, task_type, due_at })
+      .select("id")
+      .single();
 
-    return new Response(
-      JSON.stringify({ error: "Not implemented. Please complete this function." }),
-      { status: 501, headers: { "Content-Type": "application/json" } },
-    );
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return new Response(JSON.stringify({ error: "Failed to create task" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+
+    return new Response(JSON.stringify({ success: true, task_id: data.id }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+
   } catch (err) {
     console.error(err);
     return new Response(JSON.stringify({ error: "Internal server error" }), {
